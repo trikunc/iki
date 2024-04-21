@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tbl_gaji {
+  id               Int           @id @default(autoincrement())
+  Tanggal          DateTime?     @db.Date
+  Id_Karyawan      Int?
+  BPJS             Int?
+  PPh              Int?
+  Total_Pendapatan Int?
+  Total_Potongan   Int?
+  Gaji_Bersih      Int?
+  Id_User          Int?          @db.SmallInt
+  tbl_karyawan     tbl_karyawan? @relation(fields: [Id_Karyawan], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "tbl_gaji_ibfk_1")
+  tbl_user         tbl_user?     @relation(fields: [Id_User], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "tbl_gaji_ibfk_2")
+
+  @@index([Id_Karyawan], map: "Id_Karyawan")
+  @@index([Id_User], map: "Id_User")
+}
+
+model tbl_jabatan {
+  id                Int            @id @default(autoincrement())
+  Nama_Jabatan      String?        @db.VarChar(50)
+  Gaji_Pokok        Int?
+  Tunjangan_Jabatan Int?
+  tbl_karyawan      tbl_karyawan[]
+}
+
+model tbl_karyawan {
+  id             Int                  @id @default(autoincrement())
+  Nama           String?              @db.VarChar(35)
+  Id_Jabatan     Int?
+  Status         tbl_karyawan_Status?
+  Jumlah_Anak    Int?                 @db.SmallInt
+  Tunjangan_Anak Int?
+  tbl_gaji       tbl_gaji[]
+  tbl_jabatan    tbl_jabatan?         @relation(fields: [Id_Jabatan], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "tbl_karyawan_ibfk_1")
+
+  @@index([Id_Jabatan], map: "Id_Jabatan")
+}
+
+model tbl_user {
+  id        Int        @id @default(autoincrement()) @db.SmallInt
+  User_Name String?    @db.VarChar(25)
+  Email     String?    @unique(map: "Email") @db.VarChar(100)
+  Password  String?    @db.VarChar(15)
+  tbl_gaji  tbl_gaji[]
+}
+
+enum tbl_karyawan_Status {
+  Kawin
+  Belum_Kawin @map("Belum Kawin")
+}
